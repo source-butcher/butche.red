@@ -39,8 +39,10 @@ jobs:
             echo $basename
             web_file="$basename.html"
             echo "$basename"
-
             echo "<html>" > $web_file
+            echo "<head>" >> $web_file
+            echo "<meta name="viewport" content="width=device-width, initial-scale=1.0"> >> $web_file
+            echo "</head>" >> $web_file
             echo "<body>" >> $web_file
             echo "<img src=\"$file\" alt=\"$basename\" max-width=100%>" >> $web_file
             echo "</body>" >> $web_file
