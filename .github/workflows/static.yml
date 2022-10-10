@@ -42,7 +42,7 @@ jobs:
 
             echo "<html>" > $web_file
             echo "<body>" >> $web_file
-            echo "<img src=\"$file\" alt=\"$basename\" width=100%>" >> $web_file
+            echo "<img src=\"$file\" alt=\"$basename\" max-width=100%>" >> $web_file
             echo "</body>" >> $web_file
             echo "</html>" >> $web_file
           done
