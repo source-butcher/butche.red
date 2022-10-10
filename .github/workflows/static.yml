@@ -34,7 +34,7 @@ jobs:
         uses: actions/configure-pages@v2
       - name: Generate HTML
         run: >-
-          for file in "images/*"; do
+          for file in images/*; do
             basename=$(basename $file ".png")
             echo $basename
             web_file="$basename.html"
