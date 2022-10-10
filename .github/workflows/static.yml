@@ -44,7 +44,7 @@ jobs:
             echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" >> $web_file
             echo "</head>" >> $web_file
             echo "<body>" >> $web_file
-            echo "<img src=\"$file\" alt=\"$basename\" style=\"width:auto;height:100%;\">" >> $web_file
+            echo "<img src=\"$file\" alt=\"$basename\" style=\"width:auto;height:100%;margin:auto;\">" >> $web_file
             echo "</body>" >> $web_file
             echo "</html>" >> $web_file
           done
