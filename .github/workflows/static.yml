@@ -43,7 +43,6 @@ jobs:
             echo "<head>" >> $web_file
             echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" >> $web_file
             echo "</head>" >> $web_file
-            body {background-color: coral;}
             echo "<body style=\"background-color:black\">" >> $web_file
             echo "<img src=\"$file\" alt=\"$basename\" style=\"width:auto;height:100%;display:block;margin:auto;\">" >> $web_file
             echo "</body>" >> $web_file
