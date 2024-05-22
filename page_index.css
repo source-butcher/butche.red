@@ -1,0 +1,21 @@
+/* TODO: right side of list is misaligned with search bar */
+* {
+    background-color:#2d2a2a;
+  }
+  
+  #main {
+    max-width: 500px;
+    margin: auto;
+  }
+
+a:link {
+  color: red;
+}
+
+a:visited {
+  color: rgb(86, 48, 48);
+}
+
+ul {
+  list-style-type: none; /* Remove bullets */
+}

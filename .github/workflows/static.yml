@@ -1,3 +1,6 @@
+# TODO: need all images (pages) to link to index unless we are currently at the index
+# TODO: we need a separate home page and index
+# TODO we need an index page
 # Simple workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 
@@ -32,22 +35,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup Pages
         uses: actions/configure-pages@v2
-      - name: Generate HTML
-        run: >-
-          for file in images/*; do
-            basename=$(basename $file ".png")
-            echo $basename
-            web_file="$basename.html"
-            echo "$basename"
-            echo "<html>" > $web_file
-            echo "<head>" >> $web_file
-            echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" >> $web_file
-            echo "</head>" >> $web_file
-            echo "<body style=\"background-color:black\">" >> $web_file
-            echo "<img src=\"$file\" alt=\"$basename\" style=\"width:auto;height:100%;display:block;margin:auto;\">" >> $web_file
-            echo "</body>" >> $web_file
-            echo "</html>" >> $web_file
-          done
+      - name: Generate Pages
+        run: bash ./generatehtml.sh
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
