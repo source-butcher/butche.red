@@ -13,7 +13,7 @@ div{
   padding-top:149;
   padding-right:48px;
   text-align: center;
-  background-image: url('custom_images/page_index.jpg');
+  background-image: url('../custom_images/page_index.jpg');
   background-position:top;
   background-repeat:no-repeat;
 }

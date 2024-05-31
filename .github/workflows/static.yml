@@ -36,7 +36,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Generate Pages
-        run: bash ./generatehtml.sh
+        run: bash .github/scripts/generatehtml.sh
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:

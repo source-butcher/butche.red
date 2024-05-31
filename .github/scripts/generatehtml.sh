@@ -1,3 +1,5 @@
+cp custom_html/* .
+
 for file in images/*; do
     basename=$(basename -s ".png" $(basename -s ".gif" $file))
     echo $basename
@@ -6,7 +8,7 @@ for file in images/*; do
     echo "<html>" > $web_file
     echo "<head>" >> $web_file
     echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" >> $web_file
-    echo "<link rel=\"stylesheet\" href=\"main.css\">" >> $web_file
+    echo "<link rel=\"stylesheet\" href=\"custom_css/main.css\">" >> $web_file
     echo "</head>" >> $web_file
     echo "<body style=\"background-color:black; text-align:center;\">" >> $web_file
     echo "<a href="page_index.html"><img src=\"$file\" alt=\"$basename\"></a>" >> $web_file
@@ -20,7 +22,7 @@ echo "$basename"
 echo "<html>" > $target_file
 echo "<head>" >> $target_file
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" >> $target_file
-echo "<link rel=\"stylesheet\" href=\"page_index.css\">" >> $target_file
+echo "<link rel=\"stylesheet\" href=\"custom_css/page_index.css\">" >> $target_file
 echo "</head>" >> $target_file
 echo "<body>" >>$target_file
 echo "<div>" >> $target_file
