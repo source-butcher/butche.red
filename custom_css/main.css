@@ -1,5 +1,9 @@
-@media only screen and (max-width: 600px)  {
-  img{
-    width: 100%
-  }
+img {
+  display: block;
+  height: 100vh;
+  object-fit: cover;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
 }
+
