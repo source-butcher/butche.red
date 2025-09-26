@@ -1,6 +1,6 @@
 /* TODO: right side of list is misaligned with search bar */
 * {
-    /*background-color:#2d2a2a;*/
+    margin: 0;
   }
 
   #main {
