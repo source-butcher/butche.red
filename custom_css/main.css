@@ -7,3 +7,13 @@ img {
   margin-right: auto;
 }
 
+@media (max-width: 1024px) {
+  img {
+    display: block;
+    height: 100vh;
+    width: 95vw;
+    object-fit: contain;
+    margin: auto;
+  }
+}
+
