@@ -24,7 +24,7 @@ echo "<head>" >> $target_file
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" >> $target_file
 echo "<link rel=\"stylesheet\" href=\"custom_css/page_index.css\">" >> $target_file
 echo "</head>" >> $target_file
-echo "<body>" >>$target_file
+echo "<body>" >> $target_file
 echo "<div>" >> $target_file
 echo "<ul>" >> $target_file
 #echo "<li style=\"font-family: Verdana, sans-serif;font-size: 36px;\"><a href="index.html">home</a></li>" >> $target_file
@@ -38,7 +38,7 @@ for file in `ls -r [0-9]*html`; do # need to order for numbers over 9
   web_file="$basename.html"
   echo "<li><a href="$web_file">$display_name</a></li>" >> $target_file
 done
-
+echo "<li><a href="https://notjealo.us" target="_blank" rel="noopener noreferrer">notjealo.us</a></li>" >> $target_file
 echo "</ul>" >> $target_file
 echo "</div>" >> $target_file
 echo "</body>" >> $target_file
