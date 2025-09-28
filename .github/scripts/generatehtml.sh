@@ -40,9 +40,7 @@ for file in `ls -r [0-9]*html`; do # need to order for numbers over 9
   echo "<li><a href="$web_file">$display_name</a></li>" >> $target_file
   count=$((count+1))
   if [ "$count" -eq 3 ]; then
-    echo "</ul>" >> $target_file
     echo "<div class=\"window-gap\"></div>" >> $target_file
-    echo "<ul>" >> $target_file
   fi
 done
 echo "<li><a href="https://notjealo.us" target="_blank" rel="noopener noreferrer">notjealo.us</a></li>" >> $target_file
