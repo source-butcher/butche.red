@@ -39,7 +39,7 @@ for file in `ls -r [0-9]*html`; do # need to order for numbers over 9
   web_file="$basename.html"
   echo "<li><a href="$web_file">$display_name</a></li>" >> $target_file
   count=$((count+1))
-  if [ "$count" -eq 4 ]; then #insert gap after fourth link
+  if [ "$count" -eq 3 ]; then
     echo "</ul>" >> $target_file
     echo "<div class=\"window-gap\"></div>" >> $target_file
     echo "<ul>" >> $target_file
