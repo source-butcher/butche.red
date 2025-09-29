@@ -1,4 +1,5 @@
 cp custom_html/* .
+cp custom_links/* .
 
 for file in images/*; do
     basename=$(basename -s ".png" $(basename -s ".gif" $file))
@@ -31,19 +32,26 @@ echo "<ul>" >> $target_file
 echo "<li><a href="$latest_reference_file">latest</a></li>" >> $target_file
 
 count=0
-#for file in [!index]*html;
-for file in `ls -r [0-9]*html`; do # need to order for numbers over 9
-  basename=$(basename $file ".html")
-  echo $basename
-  display_name=$(echo $basename | cut -d "_" -f2-10000)
-  web_file="$basename.html"
-  echo "<li><a href="$web_file">$display_name</a></li>" >> $target_file
+# Combine all numbered html and link files, sort descending (so newest first)
+for file in $(ls -r [0-9]*.html [0-9]*.link 2>/dev/null); do
+  ext="${file##*.}"
+  basename=$(basename "$file" ."$ext")
+  display_name=$(echo "$basename" | cut -d "_" -f2-)
+
+  if [ "$ext" = "html" ]; then
+    echo "<li><a href=\"$file\">$display_name</a></li>" >> $target_file
+  elif [ "$ext" = "link" ]; then
+    source "$file"
+    # URL and NAME from inside .link file
+    echo "<li><a href=\"$URL\" target=\"_blank\" rel=\"noopener noreferrer\">${NAME:-$URL}</a></li>" >> $target_file
+  fi
+
   count=$((count+1))
   if [ "$count" -eq 3 ]; then
     echo "<div class=\"window-gap\"></div>" >> $target_file
   fi
 done
-echo "<li><a href="https://notjealo.us" target="_blank" rel="noopener noreferrer">notjealo.us</a></li>" >> $target_file
+
 echo "</ul>" >> $target_file
 echo "</div>" >> $target_file
 echo "</body>" >> $target_file
