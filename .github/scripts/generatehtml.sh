@@ -47,7 +47,7 @@ for file in $(ls -r [0-9]*.html [0-9]*.link 2>/dev/null); do
   fi
 
   count=$((count+1))
-  if [ "$count" -eq 3 ]; then
+  if [ "$count" -eq 4 ]; then
     echo "<div class=\"window-gap\"></div>" >> $target_file
   fi
 done
