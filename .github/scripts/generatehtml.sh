@@ -29,7 +29,7 @@ echo "<body>" >> $target_file
 echo "<div class=\"main\">" >> $target_file
 echo "<ul>" >> $target_file
 #echo "<li style=\"font-family: Verdana, sans-serif;font-size: 36px;\"><a href="index.html">home</a></li>" >> $target_file
-echo "<li><a href="$latest_reference_file">latest</a></li>" >> $target_file
+#echo "<li><a href="$latest_reference_file">latest</a></li>" >> $target_file
 
 count=0
 # Combine all numbered html and link files, sort descending (so newest first)
