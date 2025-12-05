@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * {
+            /*disables blue blocks when dragging*/
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+          #transform: scale(1.6);
+          #transform-origin: top left;
+          background: url(../custom_images/vert.gif);
+          background-size: cover;
+        }
+
+        .dropzone {
+            width: 10vw;
+            height: 14.4vw;
+            /*cursor: move;*/
+        }
+
+        .undraggable {
+            position: fixed;
+            /*height: 50px;*/
+            background-color: red;
+            /*cursor: move;*/
+        }
+
+        .draggable {
+            width: 10vw;
+            #height: 5.8vw;
+            position: fixed;
+            /*height: 50px;*/
+            background-color: red;
+            /*cursor: move;*/
+        }
+
+        .square-chip {
+            position: fixed;
+            background-color: red;
+            /*cursor: move;*/
+        }
+
+        #pile1 {
+            position: absolute;
+            left: 50px;
+            top: 200px;
+            border: 2px solid white;
+        }
+
+        #starting-pile1 {
+            position: absolute;
+            left: 4vw;
+            top: 4vw;
+            border: 2px solid white;
+        }
+
+        #discard-pile {
+            position: absolute;
+            left: 17vw;
+            top: 4vw;
+            border: 2px solid white;
+        }
+
+        #active-pile {
+            position: absolute;
+            left: 250px;
+            top: 200px;
+            border: 2px solid white;
+        }
+
+        #foundation-pile1 {
+            position: absolute;
+            left: 43vw;
+            top: 4vw;
+            border: 2px solid white;
+        }
+
+        #foundation-pile2 {
+            position: absolute;
+            left: 56vw;
+            top: 4vw;
+            border: 2px solid white;
+        }
+
+        #foundation-pile3 {
+            position: absolute;
+            left: 69vw;
+            top: 4vw;
+            border: 2px solid white;
+        }
+
+        #foundation-pile4 {
+            position: absolute;
+            left: 82vw;
+            top: 4vw;
+            border: 2px solid white;
+        }
+
+        #main-pile1 {
+            position: absolute;
+            left: 4vw;
+            top: 25vw;
+            border: 2px solid white;
+        }
+
+        #main-pile2 {
+            position: absolute;
+            left: 17vw;
+            top: 25vw;
+            border: 2px solid white;
+        }
+
+        #main-pile3 {
+            position: absolute;
+            left: 30vw;
+            top: 25vw;
+            border: 2px solid white;
+        }
+
+        #main-pile4 {
+            position: absolute;
+            left: 43vw;
+            top: 25vw;
+            border: 2px solid white;
+        }
+
+        #main-pile5 {
+            position: absolute;
+            left: 56vw;
+            top: 25vw;
+            border: 2px solid white;
+        }
+
+        #main-pile6 {
+            position: absolute;
+            left: 69vw;
+            top: 25vw;
+            border: 2px solid white;
+        }
+
+        #main-pile7 {
+            position: absolute;
+            left: 82vw;
+            top: 25vw;
+            border: 2px solid white;
+        }
+
+        #inactive-pile {
+            position: absolute;
+            left: 750px;
+            top: 200px;
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body style="background-color: black;">
+    <div id="starting-pile1" class="dropzone"><div class="nonflipped" id="nonflipped0"></div></div>
+    <div id="discard-pile" class="dropzone"><div class="flipped" id="flipped0"></div></div>
+
+    <div id="foundation-pile1" class="dropzone"><div class="nonflipped" id="nonflipped8"></div><div class="flipped" id="flipped8"></div></div>
+    <div id="foundation-pile2" class="dropzone"><div class="nonflipped" id="nonflipped9"></div><div class="flipped" id="flipped9"></div></div>
+    <div id="foundation-pile3" class="dropzone"><div class="nonflipped" id="nonflipped10"></div><div class="flipped" id="flipped10"></div></div>
+    <div id="foundation-pile4" class="dropzone"><div class="nonflipped" id="nonflipped11"></div><div class="flipped" id="flipped11"></div></div>
+
+    <div id="main-pile1" class="dropzone"><div class="nonflipped" id="nonflipped1"></div><div class="flipped" id="flipped1"></div></div>
+    <div id="main-pile2" class="dropzone"><div class="nonflipped" id="nonflipped2"></div><div class="flipped" id="flipped2"></div></div>
+    <div id="main-pile3" class="dropzone"><div class="nonflipped" id="nonflipped3"></div><div class="flipped" id="flipped3"></div></div>
+    <div id="main-pile4" class="dropzone"><div class="nonflipped" id="nonflipped4"></div><div class="flipped" id="flipped4"></div></div>
+    <div id="main-pile5" class="dropzone"><div class="nonflipped" id="nonflipped5"></div><div class="flipped" id="flipped5"></div></div>
+    <div id="main-pile6" class="dropzone"><div class="nonflipped" id="nonflipped6"></div><div class="flipped" id="flipped6"></div></div>
+    <div id="main-pile7" class="dropzone"><div class="nonflipped" id="nonflipped7"></div><div class="flipped" id="flipped7"></div></div>
+
+    <script>
+        var dragElement = null;
+        var mouseX, mouseY;
+        var initX, initY;
+        var isDragged = false;
+        var zIndex = 0;
+        var startingPile1 = document.getElementById("starting-pile1");
+        var discardPile = document.getElementById("discard-pile");
+        var startingDeck = ["10-Clubs.png", "10-Diamonds.png", "10-Hearts.png", "10-Spades.png", "2-Clubs.png", "2-Diamonds.png", "2-Hearts.png", "2-Spades.png", "3-Clubs.png", "3-Diamonds.png", "3-Hearts.png", "3-Spades.png", "4-Clubs.png", "4-Diamonds.png", "4-Hearts.png", "4-Spades.png", "5-Clubs.png", "5-Diamonds.png", "5-Hearts.png", "5-Spades.png", "6-Clubs.png", "6-Diamonds.png", "6-Hearts.png", "6-Spades.png", "7-Clubs.png", "7-Diamonds.png", "7-Hearts.png", "7-Spades.png", "8-Clubs.png", "8-Diamonds.png", "8-Hearts.png", "8-Spades.png", "9-Clubs.png", "9-Diamonds.png", "9-Hearts.png", "9-Spades.png", "Ace-Clubs.png", "Ace-Diamonds.png", "Ace-Hearts.png", "Ace-Spades.png", "Jack-Clubs.png", "Jack-Diamonds.png", "Jack-Hearts.png", "Jack-Spades.png", "King-Clubs.png", "King-Diamonds.png", "King-Hearts.png", "King-Spades.png", "Queen-Clubs.png", "Queen-Diamonds.png", "Queen-Hearts.png", "Queen-Spades.png"];
+        const valueOrder = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"];
+        var copyDeck = startingDeck.slice();
+        var foundationArray1 = [];
+        var shuffledDeck = [];
+        var activePile = document.getElementById('active-pile');
+        var foundationPile1 = document.getElementById('foundation-pile1');
+        var foundationPile2 = document.getElementById('foundation-pile2');
+        var foundationPile3 = document.getElementById('foundation-pile3');
+        var foundationPile4 = document.getElementById('foundation-pile4');
+        var mainPile1 = document.getElementById('main-pile1');
+        var mainPile2 = document.getElementById('main-pile2');
+        var mainPile3 = document.getElementById('main-pile3');
+        var mainPile4 = document.getElementById('main-pile4');
+        var mainPile5 = document.getElementById('main-pile5');
+        var mainPile6 = document.getElementById('main-pile6');
+        var mainPile7 = document.getElementById('main-pile7');
+        var startingpile1 = document.getElementById('starting-pile1');
+        var nonflipped0 = document.getElementById('nonflipped0');
+        var nonflipped1 = document.getElementById('nonflipped1');
+        var nonflipped2 = document.getElementById('nonflipped2');
+        var nonflipped3 = document.getElementById('nonflipped3');
+        var nonflipped4 = document.getElementById('nonflipped4');
+        var nonflipped5 = document.getElementById('nonflipped5');
+        var nonflipped6 = document.getElementById('nonflipped6');
+        var nonflipped7 = document.getElementById('nonflipped7');
+        var flipped1 = document.getElementById('flipped1');
+        var flipped2 = document.getElementById('flipped2');
+        var flipped3 = document.getElementById('flipped3');
+        var flipped4 = document.getElementById('flipped4');
+        var flipped5 = document.getElementById('flipped5');
+        var flipped6 = document.getElementById('flipped6');
+        var flipped7 = document.getElementById('flipped7');
+
+        function pullRandomCardFromArray(array) {
+            var max = array.length
+            console.log(max)
+            var index_to_pull = Math.floor(Math.random() * max) // mdn
+            console.log(index_to_pull)
+            return array.splice(index_to_pull, 1)
+        }
+
+        copyDeck.forEach(() => {
+          shuffledDeck.push(pullRandomCardFromArray(startingDeck))
+        });
+
+        console.log(startingDeck);
+        console.log(shuffledDeck);
+
+        shuffledDeck.forEach((card, index) => {
+            console.log(`${index} ${card}`);
+            var card_image = new Image();
+
+            flipCardDown(card_image);
+            card_image.classList.add("draggable");
+            card_image.classList.add("rubberband");
+            card_image.setAttribute("data-card-name", `${card}`);
+            var cut_card = `${card}`.slice(0, -4).split('-');
+	    var card_face = `${cut_card[0]}`
+            var card_suit = `${cut_card[1]}`
+	    if (["Clubs", "Spades"].includes(card_suit)) {
+                card_image.setAttribute("data-card-color", "black");
+	    } else {
+                card_image.setAttribute("data-card-color", "red");
+	    }
+            card_image.setAttribute("data-card-face", `${cut_card[0]}`);
+            card_image.setAttribute("data-card-suit", `${cut_card[1]}`);
+            card_image.setAttribute("draggable", "false");
+            nonflipped0.appendChild(card_image);
+        });
+
+	function snap_card_to_pile(card, pile) {
+            card.style.left = (pile.offsetLeft + 2) + 'px';
+            card.style.top = (pile.offsetTop + 2) + 'px';
+        }
+
+	function deal_pile_to_pile(source_pile, destination_pile) {
+	    if (source_pile.lastChild) {
+              var card = source_pile.lastChild;
+              console.log("card");
+              console.log(card);
+              destination_pile.appendChild(card);
+              console.log("offset");
+              console.log(destination_pile.offsetLeft);
+	    }
+	}
+
+	function checkStockPile(card){
+            discardPile.appendChild(card);
+	    var star_card = startingPile1.lastChild
+            star_card.addEventListener('mousedown', function(e) {
+                console.log("check stock pile mousedown listener");
+	        checkStockPile(star_card);
+            })
+	}
+
+        function restartDrawPile() {
+	    for (const child of Array.from(flipped0.children).reverse()) {
+               flipCardDown(child);
+               nonflipped0.appendChild(child);
+               child.classList.remove("liquid");
+            }
+	}
+
+        startingpile1.addEventListener('mouseup', function(e) {
+            console.log("mouse up on nonflipped0");
+            console.log("length is:");
+            console.log(nonflipped0.childNodes.length);
+	    if (nonflipped0.childNodes.length == 0) {
+                console.log("barf");
+                restartDrawPile();
+	    } else {
+                console.log("gag");
+                flipCardUp(nonflipped0.lastChild);
+	    }
+        })
+
+        function setupBoard() {
+            deal_pile_to_pile(nonflipped0, nonflipped1);
+            deal_pile_to_pile(nonflipped0, nonflipped2);
+            deal_pile_to_pile(nonflipped0, nonflipped3);
+            deal_pile_to_pile(nonflipped0, nonflipped4);
+            deal_pile_to_pile(nonflipped0, nonflipped5);
+            deal_pile_to_pile(nonflipped0, nonflipped6);
+            deal_pile_to_pile(nonflipped0, nonflipped7);
+
+            deal_pile_to_pile(nonflipped0, nonflipped2);
+            deal_pile_to_pile(nonflipped0, nonflipped3);
+            deal_pile_to_pile(nonflipped0, nonflipped4);
+            deal_pile_to_pile(nonflipped0, nonflipped5);
+            deal_pile_to_pile(nonflipped0, nonflipped6);
+            deal_pile_to_pile(nonflipped0, nonflipped7);
+
+            deal_pile_to_pile(nonflipped0, nonflipped3);
+            deal_pile_to_pile(nonflipped0, nonflipped4);
+            deal_pile_to_pile(nonflipped0, nonflipped5);
+            deal_pile_to_pile(nonflipped0, nonflipped6);
+            deal_pile_to_pile(nonflipped0, nonflipped7);
+
+            deal_pile_to_pile(nonflipped0, nonflipped4);
+            deal_pile_to_pile(nonflipped0, nonflipped5);
+            deal_pile_to_pile(nonflipped0, nonflipped6);
+            deal_pile_to_pile(nonflipped0, nonflipped7);
+
+            deal_pile_to_pile(nonflipped0, nonflipped5);
+            deal_pile_to_pile(nonflipped0, nonflipped6);
+            deal_pile_to_pile(nonflipped0, nonflipped7);
+
+            deal_pile_to_pile(nonflipped0, nonflipped6);
+            deal_pile_to_pile(nonflipped0, nonflipped7);
+
+            deal_pile_to_pile(nonflipped0, nonflipped7);
+
+            flipCardUp(nonflipped1.lastChild);
+            flipCardUp(nonflipped2.lastChild);
+            flipCardUp(nonflipped3.lastChild);
+            flipCardUp(nonflipped4.lastChild);
+            flipCardUp(nonflipped5.lastChild);
+            flipCardUp(nonflipped6.lastChild);
+            flipCardUp(nonflipped7.lastChild);
+        }
+        setupBoard();
+
+        function checkCardsSameSuit(card1, card2) {
+            return card1.getAttribute("data-card-suit") == card2.getAttribute("data-card-suit");
+	}
+
+        function checkCardsOffsuit(card1, card2) {
+            return card1.getAttribute("data-card-color") != card2.getAttribute("data-card-color");
+	}
+
+        function flipCardUp(card) {
+	    console.log("if");
+	    console.log(card.parentElement.parentElement.id);
+	    id=card.parentElement.id;
+            index_index=(id.length - 1);
+            id_index=id.charAt(index_index)
+            console.log(id_index)
+            flipped_id = `flipped${id_index}`;
+            console.log(flipped_id);
+
+	    if (flipped_id) {
+                card.src = `../images/cards/faces/${card.getAttribute("data-card-name")}`;
+                console.log(`flipping card up: ${card.src}`)
+                console.log("removing event listener");
+                card.removeEventListener('mousedown', this, false);
+                pile_one = document.getElementById(id);
+                pile_two = document.getElementById(flipped_id);
+                card.classList.add("liquid");
+                deal_pile_to_pile(pile_one, pile_two);
+            }
+        }
+
+        function flipCardDown(card) {
+            card.src = "../images/cards/backs/Design1.png"
+        }
+
+        var draggables = document.getElementsByClassName('draggable');
+        for (var i = 0; i < draggables.length; i++) {
+            draggables[i].addEventListener('mousedown', function(e) {
+                dragElement = this;
+                initX = e.offsetX;
+                initY = e.offsetY;
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                isDragged = false;
+                window.addEventListener('mousemove', mouseMove, false);
+            }, false);
+        }
+
+        function mouseMove(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            if (dragElement.classList.contains("liquid")) {
+                stack_array = Array.from(dragElement.parentElement.children);
+                new_index = stack_array.indexOf(dragElement);
+                drag_array = stack_array.slice(new_index);
+                isDragged = true;
+                i = 0;
+	        for (const drag_card of drag_array) {
+                  offset = (i * 10);
+                  drag_card.style.left = mouseX - initX + 'px';
+                  drag_card.style.top = mouseY - initY + offset + 'px';
+                  drag_card.style.zIndex = ++zIndex;
+                  i++;
+                }
+            }
+        }
+
+        function needsPileSnap(stack) {
+	    pile = stack.parentElement
+	    // 80 here represents the snapping proc bound around pile
+            //return (Math.abs(mouseX - pile.offsetLeft) < 80 && Math.abs(mouseY - pile.offsetTop) < 80)
+            return (Math.abs(mouseX - pile.offsetLeft) < 180 && Math.abs(mouseY - pile.offsetTop) < 180)
+        }
+
+        function activeForSnap(card, stack) {
+	    console.log("checking stack");
+	    console.log(stack);
+	    var top_card = stack.lastChild;
+	    if (top_card != null) {
+	      console.log("in here")
+	      console.log(card)
+	      console.log(stack)
+	      var face_val = top_card.getAttribute("data-card-face");
+              valueOrder.indexOf(face_val);
+              var top_card_value_index = valueOrder.indexOf(face_val);
+              var new_card_value_index = valueOrder.indexOf(card.getAttribute("data-card-face"));
+	      var delta = (top_card_value_index - new_card_value_index)
+              return needsPileSnap(stack) && checkCardsOffsuit(stack.lastChild, card) && (delta == 1);
+	    } else {
+              return needsPileSnap(stack)
+	    }
+        }
+
+        function foundationActiveForSnap(card, stack) {
+	    console.log("checking stack");
+	    console.log(stack);
+	    var top_card = stack.lastChild;
+	    if (top_card != null) {
+	      console.log("in here")
+	      console.log(card)
+	      console.log(stack)
+	      var face_val = top_card.getAttribute("data-card-face");
+              valueOrder.indexOf(face_val);
+              var top_card_value_index = valueOrder.indexOf(face_val);
+              var new_card_value_index = valueOrder.indexOf(card.getAttribute("data-card-face"));
+	      var delta = (new_card_value_index - top_card_value_index)
+              return needsPileSnap(stack) && checkCardsSameSuit(stack.lastChild, card) && (delta == 1);
+	    }
+            // only allow ace as first foundation card
+            else if (valueOrder.indexOf(card.getAttribute("data-card-face")) == 0){
+              return needsPileSnap(stack)
+	    }
+        }
+
+        function snapToPile(pile) {
+	    for (const drag_card of drag_array) {
+              pile.appendChild(drag_card);
+            }
+
+            stack_array = Array.from(dragElement.parentElement.children);
+            //drag_array = stack_array;
+            new_index = stack_array.indexOf(dragElement);
+            drag_array = stack_array.slice(new_index);
+            i = 0;
+
+	    for (const drag_card of drag_array) {
+              new_index = stack_array.indexOf(dragElement);
+              brand_new_index = new_index + i;
+              // can only snap to active pile, no need to check
+              //tartar = pile.getElementsByClassName("flipped")[0];
+	      console.log("snapping");
+	      console.log(pile);
+              console.log("pile.offsetLeft");
+              console.log(pile.parentElement.offsetLeft);
+              console.log("pile.offsetTop");
+              console.log(pile.parentElement.offsetTop);
+              card_count = pile.childElementCount
+              console.log("card_count");
+              console.log(card_count);
+              stack_offset = (( brand_new_index ) * 34);
+              console.log((pile.parentElement.offsetTop + stack_offset) + 'px');
+              drag_card.style.left = (pile.parentElement.offsetLeft + 2) + 'px';
+              drag_card.style.top = (pile.parentElement.offsetTop + 1 + stack_offset) + 'px';
+              i++;
+            }
+        }
+
+        function snapToFoundationPile(pile) {
+	    for (const drag_card of drag_array) {
+              pile.appendChild(drag_card);
+            }
+
+            stack_array = Array.from(dragElement.parentElement.children);
+            //drag_array = stack_array;
+            new_index = stack_array.indexOf(dragElement);
+            drag_array = stack_array.slice(new_index);
+            i = 0;
+
+	    for (const drag_card of drag_array) {
+              new_index = stack_array.indexOf(dragElement);
+              brand_new_index = new_index + i;
+              // can only snap to active pile, no need to check
+              //tartar = pile.getElementsByClassName("flipped")[0];
+	      console.log("snapping");
+	      console.log(pile);
+              console.log("pile.offsetLeft");
+              console.log(pile.parentElement.offsetLeft);
+              console.log("pile.offsetTop");
+              console.log(pile.parentElement.offsetTop);
+              card_count = pile.childElementCount
+              console.log("card_count");
+              console.log(card_count);
+              stack_offset = (( brand_new_index ) * 14);
+              console.log((pile.parentElement.offsetTop + stack_offset) + 'px');
+              drag_card.style.left = (pile.parentElement.offsetLeft + 2) + 'px';
+              drag_card.style.top = (pile.parentElement.offsetTop) + 1 + 'px';
+              i++;
+            }
+        }
+
+        function snapBack(pile) {
+	    console.log("snapping");
+	    console.log(pile);
+            //var last_top = pile.lastChild.previousSibling.style.top;
+            pile.appendChild(dragElement);
+            dragElement.style.left = (pile.offsetLeft + 2) + 'px';
+            dragElement.style.top = (pile.offsetTop + pile.offsetHeight - 2) - dragElement.offsetHeight + 'px';
+        }
+
+        function magnetizeIfNeeded(dragElement) {
+            console.log("magnetize if needed");
+            if (isDragged) {
+                if (activeForSnap(dragElement, foundationPile1)) {
+                    snapToPile(foundationPile1);
+                }
+                else if (activeForSnap(dragElement, foundationPile2)) {
+                    snapToPile(foundationPile2);
+                }
+                else if (activeForSnap(dragElement, foundationPile3)) {
+                    snapToPile(foundationPile3);
+                }
+                else if (activeForSnap(dragElement, foundationPile4)) {
+                    snapToPile(foundationPile4);
+                }
+                else if (activeForSnap(dragElement, flipped1)) {
+                    snapToPile(flipped1);
+                }
+                else if (activeForSnap(dragElement, flipped2)) {
+                    snapToPile(flipped2);
+                }
+                else if (activeForSnap(dragElement, flipped3)) {
+                    snapToPile(flipped3);
+                }
+                else if (activeForSnap(dragElement, flipped4)) {
+                    snapToPile(flipped4);
+                }
+                else if (activeForSnap(dragElement, flipped5)) {
+                    snapToPile(flipped5);
+                }
+                else if (activeForSnap(dragElement, flipped6)) {
+                    snapToPile(flipped6);
+                }
+                else if (activeForSnap(dragElement, flipped7)) {
+                    snapToPile(flipped7);
+                }
+                else if (foundationActiveForSnap(dragElement, flipped8)) {
+                    snapToFoundationPile(flipped8);
+                }
+                else if (foundationActiveForSnap(dragElement, flipped9)) {
+                    snapToFoundationPile(flipped9);
+                }
+                else if (foundationActiveForSnap(dragElement, flipped10)) {
+                    snapToFoundationPile(flipped10);
+                }
+                else if (foundationActiveForSnap(dragElement, flipped11)) {
+                    snapToFoundationPile(flipped11);
+                }
+                else {
+	            console.log("else");
+	            console.log(dragElement.parentElement);
+                    //snapBack(dragElement.parentElement);
+                    snapToPile(dragElement.parentElement);
+                }
+            }
+        }
+
+        window.addEventListener('mouseup', function(e) {
+            console.log("mouse up listener");
+            if (dragElement) {
+                magnetizeIfNeeded(dragElement);
+                dragElement = null;
+                window.removeEventListener('mousemove', mouseMove, false);
+            }
+        }, false);
+
+        nonflipped0.addEventListener('mouseup', function(e) {
+            flipCardUp(nonflipped0.lastChild);
+        })
+
+        nonflipped1.addEventListener('mouseup', function(e) {
+            flipCardUp(nonflipped1.lastChild);
+        })
+
+        nonflipped2.addEventListener('mouseup', function(e) {
+            flipCardUp(nonflipped2.lastChild);
+        })
+
+        nonflipped3.addEventListener('mouseup', function(e) {
+            flipCardUp(nonflipped3.lastChild);
+        })
+
+        nonflipped4.addEventListener('mouseup', function(e) {
+            flipCardUp(nonflipped4.lastChild);
+        })
+
+        nonflipped5.addEventListener('mouseup', function(e) {
+            flipCardUp(nonflipped5.lastChild);
+        })
+
+        nonflipped6.addEventListener('mouseup', function(e) {
+            flipCardUp(nonflipped6.lastChild);
+        })
+
+        nonflipped7.addEventListener('mouseup', function(e) {
+            flipCardUp(nonflipped7.lastChild);
+        })
+    </script>
+</body>
+</html>
