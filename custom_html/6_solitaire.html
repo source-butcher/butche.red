@@ -413,7 +413,12 @@
         }
 
         function needsPileSnap(stack) {
-	    pile = stack.parentElement
+	    top_card = stack.lastChild
+	    if (top_card != null) {
+	      pile = top_card
+            } else {
+	      pile = stack.parentElement
+            }
 	    // 80 here represents the snapping proc bound around pile
             //return (Math.abs(mouseX - pile.offsetLeft) < 80 && Math.abs(mouseY - pile.offsetTop) < 80)
             return (Math.abs(mouseX - pile.offsetLeft) < 180 && Math.abs(mouseY - pile.offsetTop) < 180)
