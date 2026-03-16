@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <style>
         * {
             /*disables blue blocks when dragging*/
@@ -9,6 +10,7 @@
             -ms-user-select: none;
             user-select: none;
         }
+        .draggable, .dropzone { touch-action: none; }
         
         body {
           #transform: scale(1.6);
@@ -273,8 +275,8 @@
 	function checkStockPile(card){
             discardPile.appendChild(card);
 	    var star_card = startingPile1.lastChild
-            star_card.addEventListener('mousedown', function(e) {
-                console.log("check stock pile mousedown listener");
+            star_card.addEventListener('pointerdown', function(e) {
+                console.log("check stock pile pointerdown listener");
 	        checkStockPile(star_card);
             })
 	}
@@ -287,8 +289,8 @@
             }
 	}
 
-        startingpile1.addEventListener('mouseup', function(e) {
-            console.log("mouse up on nonflipped0");
+        startingpile1.addEventListener('pointerup', function(e) {
+            console.log("pointer up on nonflipped0");
             console.log("length is:");
             console.log(nonflipped0.childNodes.length);
 	    if (nonflipped0.childNodes.length == 0) {
@@ -380,36 +382,34 @@
             card.src = "../images/cards/backs/Design1.png"
         }
 
-        var draggables = document.getElementsByClassName('draggable');
-        for (var i = 0; i < draggables.length; i++) {
-            draggables[i].addEventListener('mousedown', function(e) {
-                dragElement = this;
-                initX = e.offsetX;
-                initY = e.offsetY;
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                isDragged = false;
-                window.addEventListener('mousemove', mouseMove, false);
-            }, false);
-        }
-
+        function clientPos(e) { return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY }; }
+        function offsetIn(el, e) { var r = el.getBoundingClientRect(); var p = e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY }; return { x: p.x - r.left, y: p.y - r.top }; }
         function mouseMove(e) {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            if (dragElement.classList.contains("liquid")) {
+            if (e.cancelable) e.preventDefault();
+            var p = clientPos(e); mouseX = p.x; mouseY = p.y;
+            if (dragElement && dragElement.classList.contains("liquid")) {
                 stack_array = Array.from(dragElement.parentElement.children);
                 new_index = stack_array.indexOf(dragElement);
                 drag_array = stack_array.slice(new_index);
                 isDragged = true;
                 i = 0;
-	        for (const drag_card of drag_array) {
-                  offset = (i * 10);
-                  drag_card.style.left = mouseX - initX + 'px';
-                  drag_card.style.top = mouseY - initY + offset + 'px';
-                  drag_card.style.zIndex = ++zIndex;
-                  i++;
+                for (const drag_card of drag_array) {
+                    offset = (i * 10);
+                    drag_card.style.left = mouseX - initX + 'px';
+                    drag_card.style.top = mouseY - initY + offset + 'px';
+                    drag_card.style.zIndex = ++zIndex;
+                    i++;
                 }
             }
+        }
+        function stopMove() { window.removeEventListener('mousemove', mouseMove, false); window.removeEventListener('touchmove', mouseMove, false); }
+        var draggables = document.getElementsByClassName('draggable');
+        for (var i = 0; i < draggables.length; i++) {
+            (function(el){
+                function start(e) { e.preventDefault(); dragElement = el; var o = offsetIn(el, e); initX = o.x; initY = o.y; var p = clientPos(e); mouseX = p.x; mouseY = p.y; isDragged = false; window.addEventListener('mousemove', mouseMove, false); window.addEventListener('touchmove', mouseMove, { passive: false }); }
+                el.addEventListener('mousedown', start, false);
+                el.addEventListener('touchstart', start, { passive: false });
+            })(draggables[i]);
         }
 
         function needsPileSnap(stack) {
@@ -596,46 +596,27 @@
             }
         }
 
-        window.addEventListener('mouseup', function(e) {
+        function endDrag(e) {
             console.log("mouse up listener");
             if (dragElement) {
                 magnetizeIfNeeded(dragElement);
                 dragElement = null;
-                window.removeEventListener('mousemove', mouseMove, false);
+                stopMove();
             }
-        }, false);
+        }
+        window.addEventListener('mouseup', endDrag, false);
+        window.addEventListener('touchend', endDrag, false);
+        window.addEventListener('pointerup', endDrag, false);
 
-        nonflipped0.addEventListener('mouseup', function(e) {
-            flipCardUp(nonflipped0.lastChild);
-        })
-
-        nonflipped1.addEventListener('mouseup', function(e) {
-            flipCardUp(nonflipped1.lastChild);
-        })
-
-        nonflipped2.addEventListener('mouseup', function(e) {
-            flipCardUp(nonflipped2.lastChild);
-        })
-
-        nonflipped3.addEventListener('mouseup', function(e) {
-            flipCardUp(nonflipped3.lastChild);
-        })
-
-        nonflipped4.addEventListener('mouseup', function(e) {
-            flipCardUp(nonflipped4.lastChild);
-        })
-
-        nonflipped5.addEventListener('mouseup', function(e) {
-            flipCardUp(nonflipped5.lastChild);
-        })
-
-        nonflipped6.addEventListener('mouseup', function(e) {
-            flipCardUp(nonflipped6.lastChild);
-        })
-
-        nonflipped7.addEventListener('mouseup', function(e) {
-            flipCardUp(nonflipped7.lastChild);
-        })
+        function addPileFlip(pileEl, fn) { pileEl.addEventListener('mouseup', fn); pileEl.addEventListener('pointerup', fn); }
+        addPileFlip(nonflipped0, function() { if (nonflipped0.childNodes.length) flipCardUp(nonflipped0.lastChild); });
+        addPileFlip(nonflipped1, function() { if (nonflipped1.lastChild) flipCardUp(nonflipped1.lastChild); });
+        addPileFlip(nonflipped2, function() { if (nonflipped2.lastChild) flipCardUp(nonflipped2.lastChild); });
+        addPileFlip(nonflipped3, function() { if (nonflipped3.lastChild) flipCardUp(nonflipped3.lastChild); });
+        addPileFlip(nonflipped4, function() { if (nonflipped4.lastChild) flipCardUp(nonflipped4.lastChild); });
+        addPileFlip(nonflipped5, function() { if (nonflipped5.lastChild) flipCardUp(nonflipped5.lastChild); });
+        addPileFlip(nonflipped6, function() { if (nonflipped6.lastChild) flipCardUp(nonflipped6.lastChild); });
+        addPileFlip(nonflipped7, function() { if (nonflipped7.lastChild) flipCardUp(nonflipped7.lastChild); });
     </script>
 </body>
 </html>
