@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
     <style>
         * {
             /*disables blue blocks when dragging*/
@@ -17,6 +18,21 @@
           #transform-origin: top left;
           background: url(../custom_images/vert.gif);
           background-size: cover;
+        }
+
+        body.show-still {
+            background-image: url(../custom_images/vert_still.png);
+        }
+
+        #bg-toggle {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 1001;
+            color: #fff;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
         }
 
         .dropzone {
@@ -161,6 +177,7 @@
     </style>
 </head>
 <body style="background-color: black;">
+    <i id="bg-toggle" class="fa-regular fa-image" aria-label="Toggle background image" role="button" tabindex="0"></i>
     <div id="starting-pile1" class="dropzone"><div class="nonflipped" id="nonflipped0"></div></div>
     <div id="discard-pile" class="dropzone"><div class="flipped" id="flipped0"></div></div>
 
@@ -178,6 +195,17 @@
     <div id="main-pile7" class="dropzone"><div class="nonflipped" id="nonflipped7"></div><div class="flipped" id="flipped7"></div></div>
 
     <script>
+        (function () {
+            var toggle = document.getElementById("bg-toggle");
+            function flipBg() { document.body.classList.toggle("show-still"); }
+            if (toggle) {
+                toggle.addEventListener("click", flipBg);
+                toggle.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter" || e.key === " ") flipBg();
+                });
+            }
+        })();
+
         var dragElement = null;
         var mouseX, mouseY;
         var initX, initY;
