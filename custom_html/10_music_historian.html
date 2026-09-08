@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MusicHistorian</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #a04242;
+        --panel: #a04242;
+        --panel-border: #f7c9c9;
+        --text: #f7d3d3;
+        --muted: #f7d3d3;
+        --accent: #f7d3d3;
+        --accent-dim: #d38686;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .app {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 3rem;
+      }
+
+      header h1 {
+        margin: 0 0 0.25rem;
+        font-size: clamp(1.8rem, 2.5vw, 2.5rem);
+        letter-spacing: -0.03em;
+      }
+
+      .subtitle {
+        margin: 0 0 1.5rem;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .dropzone {
+        border: 2px dashed var(--panel-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        background: var(--panel);
+        transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+        position: relative;
+      }
+
+      .dropzone.dragover {
+        border-color: var(--accent);
+        background: #b75d5d;
+      }
+
+      .dropzone-label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        cursor: pointer;
+      }
+
+      .dropzone-label strong {
+        font-size: 1.05rem;
+        font-weight: 600;
+      }
+
+      .dropzone-label span {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      #file-input {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .status {
+        margin-top: 0.85rem;
+        padding: 0.7rem 0.9rem;
+        border-radius: 10px;
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        color: var(--text);
+        font-size: 0.92rem;
+      }
+
+      .status.error {
+        color: #ffebeb;
+        border-color: #f0a9a9;
+      }
+
+      .search-section {
+        margin-top: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      #search-input {
+        width: 100%;
+        padding: 0.8rem 0.9rem;
+        font-size: 1.05rem;
+        border-radius: 10px;
+        border: 1px solid var(--panel-border);
+        background: var(--panel);
+        color: var(--text);
+      }
+
+      #search-input::placeholder {
+        color: var(--text);
+        opacity: 0.9;
+      }
+
+      #search-input:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      #search-input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      .results-meta {
+        color: var(--muted);
+        min-height: 1.2rem;
+        font-size: 0.85rem;
+      }
+
+      .results {
+        list-style: none;
+        margin: 0.75rem 0 0;
+        padding: 0;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--panel-border);
+      }
+
+      .results:empty {
+        border: none;
+      }
+
+      .results li {
+        padding: 0.7rem 0.9rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.92rem;
+        border-bottom: 1px solid var(--panel-border);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background: var(--panel);
+        color: var(--text);
+      }
+
+      .results li:last-child {
+        border-bottom: none;
+      }
+
+      .results li mark {
+        background: var(--accent-dim);
+        color: var(--accent);
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <h1>MusicHistorian</h1>
+        <p class="subtitle">Fuzzy search your Spotify Extended Streaming History, entirely in your browser.</p>
+      </header>
+
+      <section id="dropzone" class="dropzone">
+        <label for="file-input" class="dropzone-label">
+          <strong>Drop Streaming_History_Audio_*.json files here</strong>
+          <span>or click to choose files</span>
+        </label>
+        <input id="file-input" type="file" accept="application/json,.json" multiple />
+      </section>
+
+      <section id="status" class="status" aria-live="polite">No files loaded yet.</section>
+
+      <section class="search-section">
+        <input
+          id="search-input"
+          type="text"
+          placeholder="Fuzzy search: artist :: album :: song (e.g. lzpyshkm)"
+          autocomplete="off"
+          spellcheck="false"
+          disabled
+        />
+        <div id="results-meta" class="results-meta"></div>
+      </section>
+
+      <ul id="results" class="results"></ul>
+    </div>
+
+    <script>
+      // fuzzy.js
+      'use strict';
+
+      function fuzzyScore(patternLower, textLower) {
+        if (patternLower.length === 0) return 0;
+
+        let score = 0;
+        let patternIdx = 0;
+        let prevMatchIdx = -1;
+        let firstMatchIdx = -1;
+        const textLen = textLower.length;
+
+        for (let i = 0; i < textLen && patternIdx < patternLower.length; i++) {
+          if (textLower[i] === patternLower[patternIdx]) {
+            if (firstMatchIdx === -1) firstMatchIdx = i;
+
+            let charScore = 1;
+
+            if (prevMatchIdx === i - 1) {
+              charScore += 6;
+            }
+
+            if (i === 0) {
+              charScore += 4;
+            } else {
+              const prevChar = textLower[i - 1];
+              if (prevChar === ' ' || prevChar === ':' || prevChar === '-' || prevChar === '_' || prevChar === '/') {
+                charScore += 4;
+              }
+            }
+
+            score += charScore;
+            prevMatchIdx = i;
+            patternIdx++;
+          }
+        }
+
+        if (patternIdx < patternLower.length) {
+          return null;
+        }
+
+        score -= firstMatchIdx * 0.5;
+        score -= textLen * 0.01;
+        return score;
+      }
+
+      function fuzzySearch(entries, query, limit) {
+        const trimmed = query.trim();
+        if (trimmed.length === 0) {
+          const results = limit ? entries.slice(0, limit).map((e) => ({ line: e.line, score: 0 })) : entries.map((e) => ({ line: e.line, score: 0 }));
+          return { count: entries.length, results };
+        }
+
+        const patternLower = trimmed.toLowerCase();
+        const matches = [];
+
+        for (let i = 0; i < entries.length; i++) {
+          const entry = entries[i];
+          const score = fuzzyScore(patternLower, entry.lower);
+          if (score !== null) {
+            matches.push({ line: entry.line, score });
+          }
+        }
+
+        matches.sort((a, b) => b.score - a.score);
+
+        const count = matches.length;
+        const results = typeof limit === 'number' ? matches.slice(0, limit) : matches;
+        return { count, results };
+      }
+
+      // app.js
+      (function () {
+        const RESULT_LIMIT = 300;
+        const SEARCH_DEBOUNCE_MS = 40;
+        const YIELD_EVERY_N_ENTRIES = 5000;
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const statusEl = document.getElementById('status');
+        const searchInput = document.getElementById('search-input');
+        const resultsMetaEl = document.getElementById('results-meta');
+        const resultsEl = document.getElementById('results');
+
+        const seen = new Map();
+        let totalEntriesParsed = 0;
+        let filesLoaded = 0;
+        let searchDebounceTimer = null;
+
+        function setStatus(message, isError) {
+          statusEl.textContent = message;
+          statusEl.classList.toggle('error', Boolean(isError));
+        }
+
+        function updateStatusIdle() {
+          if (seen.size === 0) {
+            setStatus('No files loaded yet.');
+            return;
+          }
+          setStatus(
+            `${filesLoaded} file${filesLoaded === 1 ? '' : 's'} loaded, ` +
+            `${totalEntriesParsed} entries parsed, ${seen.size} unique tracks.`
+          );
+        }
+
+        function yieldToBrowser() {
+          return new Promise((resolve) => setTimeout(resolve, 0));
+        }
+
+        function buildLine(entry) {
+          const artist = entry.master_metadata_album_artist_name || '';
+          const album = entry.master_metadata_album_album_name || '';
+          const song = entry.master_metadata_track_name || '';
+          return `${artist} :: ${album} :: ${song}`;
+        }
+
+        async function ingestFileText(fileName, text) {
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch (err) {
+            throw new Error(`Could not parse "${fileName}" as JSON: ${err.message}`);
+          }
+
+          if (!Array.isArray(data)) {
+            throw new Error(`"${fileName}" is not a JSON array of streaming history entries.`);
+          }
+
+          for (let i = 0; i < data.length; i++) {
+            const entry = data[i];
+            if (entry && typeof entry === 'object') {
+              const line = buildLine(entry);
+              if (!seen.has(line)) {
+                seen.set(line, { line, lower: line.toLowerCase() });
+              }
+            }
+            totalEntriesParsed++;
+
+            if (i > 0 && i % YIELD_EVERY_N_ENTRIES === 0) {
+              updateStatusIdle();
+              await yieldToBrowser();
+            }
+          }
+        }
+
+        async function handleFiles(fileList) {
+          const files = Array.from(fileList).filter((f) => f.name.toLowerCase().endsWith('.json'));
+          if (files.length === 0) {
+            setStatus('No .json files found in your selection.', true);
+            return;
+          }
+
+          searchInput.disabled = true;
+          for (const file of files) {
+            setStatus(`Reading ${file.name}...`);
+            await yieldToBrowser();
+            try {
+              const text = await file.text();
+              await ingestFileText(file.name, text);
+              filesLoaded++;
+            } catch (err) {
+              setStatus(err.message, true);
+              continue;
+            }
+          }
+
+          updateStatusIdle();
+          searchInput.disabled = seen.size === 0;
+          renderSearch();
+        }
+
+        function escapeHtml(str) {
+          return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+        }
+
+        function renderResults(entries) {
+          const query = searchInput.value;
+          const limited = typeof entries.limit === 'number';
+          const { count, results } = fuzzySearch(entries.list, query, RESULT_LIMIT);
+
+          if (count === 0) {
+            resultsMetaEl.textContent = entries.list.length === 0 ? '' : 'No matches.';
+            resultsEl.innerHTML = '';
+            return;
+          }
+
+          resultsMetaEl.textContent =
+            count > results.length
+              ? `Showing ${results.length} of ${count} matches (of ${entries.list.length} unique tracks).`
+              : `${count} match${count === 1 ? '' : 'es'} (of ${entries.list.length} unique tracks).`;
+
+          const html = results
+            .map((r) => `<li>${escapeHtml(r.line)}</li>`)
+            .join('');
+          resultsEl.innerHTML = html;
+        }
+
+        function renderSearch() {
+          const list = Array.from(seen.values());
+          renderResults({ list });
+        }
+
+        searchInput.addEventListener('input', () => {
+          if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+          searchDebounceTimer = setTimeout(renderSearch, SEARCH_DEBOUNCE_MS);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files.length > 0) {
+            handleFiles(e.target.files);
+          }
+        });
+
+        ['dragenter', 'dragover'].forEach((eventName) => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('dragover');
+          });
+        });
+
+        ['dragleave', 'drop'].forEach((eventName) => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('dragover');
+          });
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          if (dt && dt.files && dt.files.length > 0) {
+            handleFiles(dt.files);
+          }
+        });
+
+        updateStatusIdle();
+      })();
+    </script>
+  </body>
+</html>
