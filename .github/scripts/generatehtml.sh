@@ -33,7 +33,7 @@ echo "<ul>" >> $target_file
 
 count=0
 # Combine all numbered html and link files, sort descending (so newest first)
-for file in $(ls -r [0-9]*.html [0-9]*.link 2>/dev/null); do
+for file in $(ls [0-9]*.html [0-9]*.link 2>/dev/null | sort -t_ -k1,1nr); do
   ext="${file##*.}"
   basename=$(basename "$file" ."$ext")
   display_name=$(echo "$basename" | cut -d "_" -f2-)
@@ -57,5 +57,5 @@ echo "</div>" >> $target_file
 echo "</body>" >> $target_file
 echo "</html>" >> $target_file
 
-latest_page=$(ls -r [0-9]*html | head -1)
+latest_page=$(ls [0-9]*html 2>/dev/null | sort -t_ -k1,1nr | head -1)
 echo "<meta http-equiv=\"Refresh\" content=\"0; url=$latest_page\" />" > $latest_reference_file
